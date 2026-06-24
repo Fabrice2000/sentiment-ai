@@ -72,7 +72,6 @@ pipeline {
                             --volumes-from jenkins \
                             -w "$WORKSPACE" \
                             sonarsource/sonar-scanner-cli:latest \
-                            sonar-scanner \
                             -Dsonar.projectKey=sentiment-ai \
                             -Dsonar.projectName=SentimentAI \
                             -Dsonar.projectBaseDir="$WORKSPACE" \
