@@ -37,7 +37,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonarqube') {
-                    sh 'echo "===== TOKEN LENGTH ====="; printf "%s" "$SONAR_AUTH_TOKEN" | wc -c; echo "===== TOKEN HEXDUMP ====="; printf "%s" "$SONAR_AUTH_TOKEN" | head -c 5 | xxd; echo "..."; printf "%s" "$SONAR_AUTH_TOKEN" | tail -c 5 | xxd; echo "===== TEST DIRECT ====="; docker run --rm --network cicd-network --volumes-from jenkins -w "$WORKSPACE" sonarsource/sonar-scanner-cli:latest sonar-scanner -Dsonar.projectKey=sentiment-ai -Dsonar.sources=src -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login="$SONAR_AUTH_TOKEN" 2>&1 | tail -8'
+                    sh 'echo "LEN:"; printf "%s" "$SONAR_AUTH_TOKEN" | wc -c; echo "TEST:"; docker run --rm --network cicd-network --volumes-from jenkins -w "$WORKSPACE" sonarsource/sonar-scanner-cli:latest sonar-scanner -Dsonar.projectKey=sentiment-ai -Dsonar.sources=src -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login="$SONAR_AUTH_TOKEN" 2>&1 | tail -6'
                 }
             }
         }
