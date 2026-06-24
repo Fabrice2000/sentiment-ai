@@ -72,7 +72,6 @@ pipeline {
                                 --network cicd-network \
                                 --volumes-from jenkins \
                                 -w "$WORKSPACE" \
-                                -e SONAR_HOST_URL="$SONAR_HOST_URL" \
                                 sonarsource/sonar-scanner-cli:latest \
                                 sonar-scanner \
                                 -Dsonar.projectKey=sentiment-ai \
@@ -128,12 +127,12 @@ pipeline {
                     passwordVariable: 'REGISTRY_PASS'
                 )]) {
                     sh """
-                        docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+                        docker tag \${IMAGE_NAME}:\${IMAGE_TAG} \${REGISTRY}/\${IMAGE_NAME}:\${IMAGE_TAG}
                         echo \$REGISTRY_PASS | docker login ghcr.io \
                             -u \$REGISTRY_USER --password-stdin
-                        docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
-                        docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${REGISTRY}/${IMAGE_NAME}:latest
-                        docker push ${REGISTRY}/${IMAGE_NAME}:latest
+                        docker push \${REGISTRY}/\${IMAGE_NAME}:\${IMAGE_TAG}
+                        docker tag \${IMAGE_NAME}:\${IMAGE_TAG} \${REGISTRY}/\${IMAGE_NAME}:latest
+                        docker push \${REGISTRY}/\${IMAGE_NAME}:latest
                     """
                 }
             }
