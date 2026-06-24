@@ -35,7 +35,8 @@ pipeline {
                     set -e
                     docker cp test-runner:/tmp/coverage.xml ./coverage.xml 2>/dev/null || true
                     docker rm -f test-runner 2>/dev/null || true
-                    sed -i "s|/app/src|src|g; s|<source>/app</source>|<source>.</source>|g" coverage.xml || true
+                    sed -i "s|/app/src|src|g" coverage.xml || true
+                    sed -i "s|<source>/app</source>|<source>.</source>|g" coverage.xml || true
                     exit $TEST_EXIT_CODE
                 '''
             }
@@ -49,7 +50,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonarqube') {
-                    sh 'docker run --rm --network cicd-network --volumes-from jenkins -w $WORKSPACE -e SONAR_HOST_URL=$SONAR_HOST_URL -e SONAR_TOKEN=$SONAR_AUTH_TOKEN sonarsource/sonar-scanner-cli:latest sonar-scanner -Dsonar.projectKey=sentiment-ai -Dsonar.projectName=SentimentAI -Dsonar.sources=src -Dsonar.python.version=3.11 -Dsonar.python.coverage.reportPaths=coverage.xml -Dsonar.sourceEncoding=UTF-8 -Dsonar.scanner.metadataFilePath=$WORKSPACE/report-task.txt'
+                    sh 'SONAR_SCANNER_OPTS="" docker run --rm --network cicd-network --volumes-from jenkins -w $WORKSPACE sonarsource/sonar-scanner-cli:latest sonar-scanner -Dsonar.projectKey=sentiment-ai -Dsonar.projectName=SentimentAI -Dsonar.sources=src -Dsonar.python.version=3.11 -Dsonar.python.coverage.reportPaths=coverage.xml -Dsonar.sourceEncoding=UTF-8 -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.scanner.metadataFilePath=$WORKSPACE/report-task.txt'
                 }
             }
         }
