@@ -94,8 +94,8 @@ pipeline {
             steps {
                 echo "Deploiement de ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} en staging..."
                 sh '''
-                    docker compose -p staging -f docker-compose.yml down 2>/dev/null || true
-                    docker compose -p staging -f docker-compose.yml up -d
+                    docker rm -f sentiment-staging 2>/dev/null || true
+                    docker run -d --name sentiment-staging --network cicd-network -p 8001:8000 ${IMAGE_NAME}:${IMAGE_TAG}
                     echo "Staging disponible sur http://localhost:8001"
                 '''
             }
@@ -105,7 +105,7 @@ pipeline {
 
     post {
         always {
-            sh 'docker compose down -v 2>/dev/null || true'
+            echo 'Pipeline termine.'
         }
         success {
             echo "Pipeline reussi ! Image : ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
