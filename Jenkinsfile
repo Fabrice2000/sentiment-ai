@@ -94,8 +94,8 @@ pipeline {
             steps {
                 echo "Deploiement de ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} en staging..."
                 sh '''
-                    docker compose -f docker-compose.yml -p staging down 2>/dev/null || true
-                    docker compose -f docker-compose.yml -p staging up -d
+                    docker compose -p staging -f docker-compose.yml down 2>/dev/null || true
+                    docker compose -p staging -f docker-compose.yml up -d
                     echo "Staging disponible sur http://localhost:8001"
                 '''
             }
