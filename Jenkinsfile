@@ -34,9 +34,9 @@ pipeline {
             steps {
                 sh '''
                     docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                    
+
                     docker rm -f test-runner 2>/dev/null || true
-                    
+
                     set +e
                     docker run \
                         -e CI=true \
@@ -49,10 +49,10 @@ pipeline {
                         --cov-fail-under=70
                     TEST_EXIT_CODE=$?
                     set -e
-                    
+
                     docker cp test-runner:/tmp/coverage.xml ./coverage.xml 2>/dev/null || true
                     docker rm -f test-runner 2>/dev/null || true
-                    
+
                     exit $TEST_EXIT_CODE
                 '''
             }
@@ -66,33 +66,34 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                    withSonarQubeEnv('sonarqube') {
-                        sh '''
-                            docker run --rm \
-                                --network cicd-network \
-                                --volumes-from jenkins \
-                                -w "$WORKSPACE" \
-                                sonarsource/sonar-scanner-cli:latest \
-                                sonar-scanner \
-                                -Dsonar.projectKey=sentiment-ai \
-                                -Dsonar.projectName=SentimentAI \
-                                -Dsonar.projectBaseDir="$WORKSPACE" \
-                                -Dsonar.sources=src \
-                                -Dsonar.python.version=3.11 \
-                                -Dsonar.python.coverage.reportPaths=coverage.xml \
-                                -Dsonar.sourceEncoding=UTF-8 \
-                                -Dsonar.login=$SONAR_TOKEN \
-                                -Dsonar.scanner.metadataFilePath=$WORKSPACE/report-task.txt
-                        '''
-                    }
+                    sh '''
+                        docker run --rm \
+                            --network cicd-network \
+                            --volumes-from jenkins \
+                            -w "$WORKSPACE" \
+                            sonarsource/sonar-scanner-cli:latest \
+                            sonar-scanner \
+                            -Dsonar.projectKey=sentiment-ai \
+                            -Dsonar.projectName=SentimentAI \
+                            -Dsonar.projectBaseDir="$WORKSPACE" \
+                            -Dsonar.sources=src \
+                            -Dsonar.python.version=3.11 \
+                            -Dsonar.python.coverage.reportPaths=coverage.xml \
+                            -Dsonar.sourceEncoding=UTF-8 \
+                            -Dsonar.host.url=http://sonarqube:9000 \
+                            -Dsonar.login=$SONAR_TOKEN \
+                            -Dsonar.scanner.metadataFilePath=$WORKSPACE/report-task.txt
+                    '''
                 }
             }
         }
 
         stage('Quality Gate') {
             steps {
-                timeout(time: 15, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                withSonarQubeEnv('sonarqube') {
+                    timeout(time: 5, unit: 'MINUTES') {
+                        waitForQualityGate abortPipeline: true
+                    }
                 }
             }
         }
