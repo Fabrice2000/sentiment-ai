@@ -65,7 +65,7 @@ pipeline {
 
         stage('Security Scan') {
             steps {
-                sh 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v trivy-cache:/root/.cache/trivy -v $WORKSPACE/.trivyignore:/.trivyignore aquasec/trivy:latest image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --format table ${IMAGE_NAME}:${IMAGE_TAG}'
+                sh 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v trivy-cache:/root/.cache/trivy -v $WORKSPACE/.trivyignore:/tmp/.trivyignore -e TRIVY_IGNOREFILE=/tmp/.trivyignore aquasec/trivy:latest image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --format table ${IMAGE_NAME}:${IMAGE_TAG}'
             }
             post {
                 failure {
