@@ -65,11 +65,12 @@ pipeline {
 
         stage('Security Scan') {
             steps {
-                sh 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v trivy-cache:/root/.cache/trivy aquasec/trivy:latest image --severity HIGH,CRITICAL --exit-code 0 --format table ${IMAGE_NAME}:${IMAGE_TAG}'
+                sh 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v trivy-cache:/root/.cache/trivy aquasec/trivy:latest image --severity HIGH,CRITICAL --exit-code 1 --format table ${IMAGE_NAME}:${IMAGE_TAG}'
             }
             post {
                 failure {
                     echo 'Vulnerabilites CRITICAL ou HIGH detectees !'
+                    echo 'Corrigez les dependances avant de deployer.'
                 }
             }
         }
