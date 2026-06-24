@@ -1,0 +1,5 @@
+# CVE starlette non corrigeables : aucune version de FastAPI ne supporte
+# encore starlette 1.x (FastAPI 0.122 exige starlette < 0.51).
+# A reevaluer quand une version compatible sera disponible.
+CVE-2026-48818
+CVE-2026-54283
