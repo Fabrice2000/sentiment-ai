@@ -50,7 +50,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonarqube') {
-                    sh 'SONAR_SCANNER_OPTS="" docker run --rm --network cicd-network --volumes-from jenkins -w $WORKSPACE sonarsource/sonar-scanner-cli:latest sonar-scanner -Dsonar.projectKey=sentiment-ai -Dsonar.projectName=SentimentAI -Dsonar.sources=src -Dsonar.python.version=3.11 -Dsonar.python.coverage.reportPaths=coverage.xml -Dsonar.sourceEncoding=UTF-8 -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.scanner.metadataFilePath=$WORKSPACE/report-task.txt'
+                    sh 'echo "DEBUG_START"; echo "SONAR_HOST_URL=[$SONAR_HOST_URL]"; echo "SONAR_AUTH_TOKEN=[$SONAR_AUTH_TOKEN]"; echo "SONAR_SCANNER_OPTS=[$SONAR_SCANNER_OPTS]"; echo "DEBUG_END"'
                 }
             }
         }
