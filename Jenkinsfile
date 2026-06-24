@@ -69,7 +69,7 @@ pipeline {
             }
             steps {
                 withSonarQubeEnv('sonarqube') {
-                    sh '''
+                    sh """
                         docker run --rm \
                             --network cicd-network \
                             --volumes-from jenkins \
@@ -86,7 +86,7 @@ pipeline {
                             -Dsonar.sourceEncoding=UTF-8 \
                             -Dsonar.login="$SONARQUBE_TOKEN" \
                             -Dsonar.scanner.metadataFilePath=$WORKSPACE/report-task.txt
-                    '''
+                    """
                 }
             }
         }
