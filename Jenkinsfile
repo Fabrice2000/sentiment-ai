@@ -75,7 +75,6 @@ pipeline {
                             --volumes-from jenkins \
                             -w "$WORKSPACE" \
                             -e SONAR_HOST_URL="$SONAR_HOST_URL" \
-                            -e SONAR_TOKEN="$SONARQUBE_TOKEN" \
                             sonarsource/sonar-scanner-cli:latest \
                             sonar-scanner \
                             -Dsonar.projectKey=sentiment-ai \
@@ -85,6 +84,7 @@ pipeline {
                             -Dsonar.python.version=3.11 \
                             -Dsonar.python.coverage.reportPaths=coverage.xml \
                             -Dsonar.sourceEncoding=UTF-8 \
+                            -Dsonar.login="$SONARQUBE_TOKEN" \
                             -Dsonar.scanner.metadataFilePath=$WORKSPACE/report-task.txt
                     '''
                 }
