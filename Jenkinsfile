@@ -35,10 +35,8 @@ pipeline {
                 sh '''
                     docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
                     
-                    # Supprimer un éventuel conteneur test-runner résiduel
                     docker rm -f test-runner 2>/dev/null || true
                     
-                    # Lancer les tests en nommant le conteneur pour copier coverage.xml
                     set +e
                     docker run \
                         -e CI=true \
@@ -52,11 +50,9 @@ pipeline {
                     TEST_EXIT_CODE=$?
                     set -e
                     
-                    # Copier coverage.xml depuis le conteneur vers le workspace
                     docker cp test-runner:/tmp/coverage.xml ./coverage.xml 2>/dev/null || true
                     docker rm -f test-runner 2>/dev/null || true
                     
-                    # Retourner le code de sortie des tests
                     exit $TEST_EXIT_CODE
                 '''
             }
@@ -149,10 +145,7 @@ pipeline {
             steps {
                 echo "Déploiement de ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} en staging..."
                 sh '''
-                    # Arrêter le staging précédent proprement
                     docker compose -f docker-compose.yml -p staging down 2>/dev/null || true
-                    
-                    # Démarrer la nouvelle version
                     docker compose -f docker-compose.yml -p staging up -d
                     echo "Staging disponible sur http://localhost:8001"
                 '''
