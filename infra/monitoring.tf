@@ -17,16 +17,26 @@ resource "docker_container" "prometheus" {
     external = 9090
   }
 
-  volumes {
-    host_path      = abspath("${path.module}/../monitoring/prometheus.yml")
-    container_path = "/etc/prometheus/prometheus.yml"
-    read_only      = true
-  }
+  command = [
+    "--config.file=/etc/prometheus/prometheus.yml",
+    "--storage.tsdb.retention.time=15d"
+  ]
 
-  volumes {
-    host_path      = abspath("${path.module}/../monitoring/alerts.yml")
-    container_path = "/etc/prometheus/alerts.yml"
-    read_only      = true
+  upload {
+    content = <<-PROMCFG
+      global:
+        scrape_interval: 15s
+        evaluation_interval: 15s
+      scrape_configs:
+        - job_name: 'sentiment-ai'
+          static_configs:
+            - targets: ['sentiment-staging:8000']
+          metrics_path: /metrics
+        - job_name: 'prometheus'
+          static_configs:
+            - targets: ['localhost:9090']
+    PROMCFG
+    file = "/etc/prometheus/prometheus.yml"
   }
 }
 
