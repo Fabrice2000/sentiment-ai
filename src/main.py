@@ -30,9 +30,11 @@ prediction_duration = Histogram(
 # Instrumentation automatique HTTP (expose GET /metrics)
 Instrumentator().instrument(app).expose(app)
 
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
 
 @app.post("/predict", response_model=PredictionResponse)
 def predict(request: PredictionRequest):
