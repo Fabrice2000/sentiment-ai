@@ -103,7 +103,7 @@ pipeline {
         stage('IaC Apply') {
             when { expression { env.GIT_BRANCH == 'origin/main' || env.GIT_BRANCH == 'main' } }
             steps {
-                sh 'docker rm -f sentiment-staging 2>/dev/null || true'
+                sh 'docker rm -f sentiment-staging prometheus grafana 2>/dev/null || true'
                 dir('infra') {
                     sh 'terraform init -input=false'
                     sh "terraform apply -auto-approve -var='image_tag=${IMAGE_TAG}'"
@@ -120,6 +120,40 @@ pipeline {
                     docker run --rm --network cicd-network curlimages/curl:latest curl -f http://sentiment-staging:8000/health
                     echo "Staging disponible sur http://localhost:8001"
                 '''
+            }
+        }
+
+        stage('Smoke Test') {
+            when { expression { env.GIT_BRANCH == 'origin/main' || env.GIT_BRANCH == 'main' } }
+            steps {
+                sh '''
+                    echo "Attente demarrage (10s)..."
+                    sleep 10
+
+                    # 1. L'app repond
+                    curl -f http://localhost:8001/health || exit 1
+                    echo "/health OK"
+
+                    # 2. Les metriques sont exposees
+                    curl -s http://localhost:8001/metrics | grep -q sentiment_predictions_total || exit 1
+                    echo "/metrics OK -- metriques SentimentAI presentes"
+
+                    # 3. Prometheus scrape l'app
+                    sleep 20
+                    curl -s "http://localhost:9090/api/v1/query?query=up{job='sentiment-ai'}" | grep -q '"value":.*1' || exit 1
+                    echo "Prometheus scrape sentiment-ai : UP"
+
+                    # 4. Grafana repond
+                    curl -f http://localhost:3000/api/health || exit 1
+                    echo "Grafana OK"
+                '''
+            }
+            post {
+                failure {
+                    sh 'docker logs prometheus || true'
+                    sh 'docker logs sentiment-staging || true'
+                    echo 'Smoke Test KO -- voir logs ci-dessus'
+                }
             }
         }
 
