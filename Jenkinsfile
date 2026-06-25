@@ -103,6 +103,7 @@ pipeline {
         stage('IaC Apply') {
             when { expression { env.GIT_BRANCH == 'origin/main' || env.GIT_BRANCH == 'main' } }
             steps {
+                sh 'docker rm -f sentiment-staging 2>/dev/null || true'
                 dir('infra') {
                     sh 'terraform init -input=false'
                     sh "terraform apply -auto-approve -var='image_tag=${IMAGE_TAG}'"
