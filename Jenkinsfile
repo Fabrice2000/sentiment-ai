@@ -113,7 +113,12 @@ pipeline {
         stage('Deploy Staging') {
             when { expression { env.GIT_BRANCH == 'origin/main' || env.GIT_BRANCH == 'main' } }
             steps {
-                sh 'docker run --rm --network cicd-network curlimages/curl:latest curl -f http://sentiment-staging:8000/health'
+                sh '''
+                    echo "Attente demarrage du container staging..."
+                    sleep 15
+                    docker run --rm --network cicd-network curlimages/curl:latest curl -f http://sentiment-staging:8000/health
+                    echo "Staging disponible sur http://localhost:8001"
+                '''
             }
         }
 
