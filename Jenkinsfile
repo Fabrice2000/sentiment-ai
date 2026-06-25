@@ -24,6 +24,16 @@ pipeline {
             }
         }
 
+        stage('IaC Validate') {
+            steps {
+                dir('infra') {
+                    sh 'terraform init -backend=false -input=false'
+                    sh 'terraform fmt -check'
+                    sh 'terraform validate'
+                }
+            }
+        }
+
         stage('Build & Test') {
             steps {
                 sh '''
@@ -90,15 +100,20 @@ pipeline {
             }
         }
 
+        stage('IaC Apply') {
+            when { expression { env.GIT_BRANCH == 'origin/main' || env.GIT_BRANCH == 'main' } }
+            steps {
+                dir('infra') {
+                    sh 'terraform init -input=false'
+                    sh "terraform apply -auto-approve -var='image_tag=${IMAGE_TAG}'"
+                }
+            }
+        }
+
         stage('Deploy Staging') {
             when { expression { env.GIT_BRANCH == 'origin/main' || env.GIT_BRANCH == 'main' } }
             steps {
-                echo "Deploiement de ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} en staging..."
-                sh '''
-                    docker rm -f sentiment-staging 2>/dev/null || true
-                    docker run -d --name sentiment-staging --network cicd-network -p 8001:8000 ${IMAGE_NAME}:${IMAGE_TAG}
-                    echo "Staging disponible sur http://localhost:8001"
-                '''
+                sh 'curl -f http://localhost:8001/health || exit 1'
             }
         }
 
