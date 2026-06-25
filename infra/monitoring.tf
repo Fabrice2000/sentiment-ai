@@ -36,7 +36,7 @@ resource "docker_container" "prometheus" {
           static_configs:
             - targets: ['localhost:9090']
     PROMCFG
-    file = "/etc/prometheus/prometheus.yml"
+    file    = "/etc/prometheus/prometheus.yml"
   }
 }
 
