@@ -130,21 +130,21 @@ pipeline {
                     echo "Attente demarrage (10s)..."
                     sleep 10
 
-                    # 1. L'app repond
-                    curl -f http://localhost:8001/health || exit 1
+                    # 1. L'app repond (via DNS Docker)
+                    docker run --rm --network cicd-network curlimages/curl:latest curl -f http://sentiment-staging:8000/health
                     echo "/health OK"
 
                     # 2. Les metriques sont exposees
-                    curl -s http://localhost:8001/metrics | grep -q sentiment_predictions_total || exit 1
+                    docker run --rm --network cicd-network curlimages/curl:latest curl -s http://sentiment-staging:8000/metrics | grep -q sentiment_predictions_total
                     echo "/metrics OK -- metriques SentimentAI presentes"
 
                     # 3. Prometheus scrape l'app
                     sleep 20
-                    curl -s "http://localhost:9090/api/v1/query?query=up{job='sentiment-ai'}" | grep -q '"value":.*1' || exit 1
+                    docker run --rm --network cicd-network curlimages/curl:latest curl -s "http://prometheus:9090/api/v1/query?query=up{job='sentiment-ai'}" | grep -q '"value":.*1'
                     echo "Prometheus scrape sentiment-ai : UP"
 
                     # 4. Grafana repond
-                    curl -f http://localhost:3000/api/health || exit 1
+                    docker run --rm --network cicd-network curlimages/curl:latest curl -f http://grafana:3000/api/health
                     echo "Grafana OK"
                 '''
             }
